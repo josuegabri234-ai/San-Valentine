@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Quieres ser mi San Valentine? 💗</title>
+    <style>
+        /* 1. Quitamos márgenes y fijamos el fondo rosa crema desde el CSS también */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #FFF4F2; /* Tu color rosa tenue crema */
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 2. Estilo para el contador (se verá arriba) */
+        #clock {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            font-size: 20px;
+            color: #8c5a64;
+            z-index: 10;
+            /* Lo mantenemos visible o puedes poner display:none si quieres que aparezca después */
+        }
+    </style>
+</head>
+<body>
+    <div id="clock"></div>
+    <canvas id="canvas"></canvas>
+    
+    <script src="script.js"></script>
+</body>
+</html>
