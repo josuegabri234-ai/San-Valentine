@@ -19,7 +19,6 @@ const frasesExtra = [
 ];
 
 const tituloCarta = "I Love You";
-// NUEVO MENSAJE ACTUALIZADO
 const mensajeCarta = [
     "Mi amor, preparé esta sorpresa para",
     "pedirte que seas mi San Valentín.",
@@ -47,7 +46,7 @@ const fraseCompleta = "Mi amor por ti comenzó hace...";
 const fechaInicio = new Date(2024, 10, 18, 13, 0, 0);
 
 // ==========================================
-// 2. MOTOR DE RENDERIZADO (RESPONSIVO)
+// 2. MOTOR DE RENDERIZADO
 // ==========================================
 function loopPrincipal(ctx) {
     if (ctx.canvas.width !== window.innerWidth || ctx.canvas.height !== window.innerHeight) {
@@ -102,30 +101,38 @@ function loopPrincipal(ctx) {
     }
 
     if (mostrarTextoFinal) {
-        ctx.fillStyle = COLOR_VINO_TINTO; ctx.textAlign = "left"; ctx.font = `italic 21px ${FONT_CLASICA}`;
-        ctx.fillText(fraseActual, mX, sueloY - 65); 
-        if (mostrarReloj) dibujarRelojSecuencial(ctx, mX, sueloY - 30);
+        ctx.fillStyle = COLOR_VINO_TINTO; ctx.textAlign = "left"; ctx.font = `italic 19px ${FONT_CLASICA}`;
+        ctx.fillText(fraseActual, mX, sueloY - 75); 
+        if (mostrarReloj) dibujarRelojSecuencial(ctx, mX, sueloY - 35);
     }
 
     if (escribiendoLineas) {
-        ctx.textAlign = "left"; let altoLinea = 32; 
+        ctx.textAlign = "left"; let altoLinea = 30; 
         lineasEscritas.forEach((texto, i) => { 
             const esUltimaLinea = (i === frasesExtra.length - 1);
             if (esUltimaLinea) {
+                let latido = 1 + Math.sin(Date.now() * 0.006) * 0.03; 
+                ctx.save();
                 ctx.fillStyle = mouseSobreBoton ? COLOR_ROSADO : "#000";
-                ctx.font = `bold italic 21px ${FONT_CLASICA}`;
-                if (mouseSobreBoton) { ctx.shadowBlur = 10; ctx.shadowColor = COLOR_ROSADO; }
-                ctx.fillText(texto, mX, 80 + (i * altoLinea));
-                ctx.shadowBlur = 0;
+                ctx.font = `bold italic 20px ${FONT_CLASICA}`;
+                if (indiceFraseActual >= frasesExtra.length) {
+                    ctx.translate(mX, 70 + (i * altoLinea));
+                    ctx.scale(latido, latido);
+                    if (mouseSobreBoton) { ctx.shadowBlur = 10; ctx.shadowColor = COLOR_ROSADO; }
+                    ctx.fillText(texto, 0, 0);
+                } else {
+                    ctx.fillText(texto, mX, 70 + (i * altoLinea));
+                }
+                ctx.restore();
             } else {
                 ctx.fillStyle = COLOR_VINO_TINTO;
-                ctx.font = (i === 0) ? `bold italic 24px ${FONT_CLASICA}` : `21px ${FONT_CLASICA}`;
-                ctx.fillText(texto, mX, 80 + (i * altoLinea)); 
+                ctx.font = (i === 0) ? `bold italic 22px ${FONT_CLASICA}` : `19px ${FONT_CLASICA}`;
+                ctx.fillText(texto, mX, 70 + (i * altoLinea)); 
             }
         });
         if (indiceFraseActual < frasesExtra.length) {
             ctx.fillStyle = COLOR_VINO_TINTO;
-            ctx.fillText(fraseExtraActual + (Math.floor(Date.now() / 500) % 2 == 0 ? "|" : ""), mX, 80 + (lineasEscritas.length * altoLinea));
+            ctx.fillText(fraseExtraActual + (Math.floor(Date.now() / 500) % 2 == 0 ? "|" : ""), mX, 70 + (lineasEscritas.length * altoLinea));
         }
     }
 
@@ -138,23 +145,26 @@ function loopPrincipal(ctx) {
 }
 
 // ==========================================
-// 3. DISEÑO Y LÓGICA
+// 3. DISEÑO Y LÓGICA (AJUSTE MÓVIL)
 // ==========================================
 function iniciarArbol(ctx, bX, bY) {
-    const pT = {x: bX + 50, y: window.innerHeight * 0.15}, cpT = {x: bX, y: window.innerHeight * 0.6};
+    // Tronco más corto para que quepa en pantalla vertical
+    const alturaArbol = window.innerHeight * (window.innerWidth < 600 ? 0.35 : 0.55);
+    const pT = {x: bX + 30, y: bY - alturaArbol}, cpT = {x: bX, y: bY - (alturaArbol * 0.4)};
+    
     let ramasTotales = 5, ramasTerminadas = 0;
-    dibujarTrazo(ctx, {x: bX, y: bY}, pT, cpT, 60, 0, 0, true, () => {
-        const config = [{t: 0.35, lx: -140, ly: -120, w: 20}, {t: 0.48, lx: 150, ly: -110, w: 16}, {t: 0.6, lx: -120, ly: -140, w: 12}, {t: 0.75, lx: 110, ly: -130, w: 8}, {t: 0.88, lx: -30, ly: -60, w: 4}];
+    dibujarTrazo(ctx, {x: bX, y: bY}, pT, cpT, 45, 0, 0, true, () => {
+        const config = [{t: 0.35, lx: -80, ly: -60, w: 15}, {t: 0.48, lx: 90, ly: -55, w: 12}, {t: 0.6, lx: -70, ly: -70, w: 10}, {t: 0.75, lx: 60, ly: -65, w: 6}, {t: 0.88, lx: -20, ly: -30, w: 4}];
         config.forEach((r, i) => {
             let t = r.t, o = {x: (1-t)**2*bX+2*(1-t)*t*cpT.x+t**2*pT.x, y: (1-t)**2*bY+2*(1-t)*t*cpT.y+t**2*pT.y};
-            dibujarTrazo(ctx, o, {x: o.x + r.lx, y: o.y + r.ly}, {x: o.x, y: o.y - 20}, r.w, 0, 400 * i, false, (pf) => {
+            dibujarTrazo(ctx, o, {x: o.x + r.lx, y: o.y + r.ly}, {x: o.x, y: o.y - 15}, r.w, 0, 300 * i, false, (pf) => {
                 let sub = 0;
                 for (let j = 0; j < 3; j++) {
                     let tA = 0.3 + (j * 0.25);
-                    let rO = {x: (1-tA)**2*o.x+2*(1-tA)*tA*o.x+tA**2*pf.x, y: (1-tA)**2*o.y+2*(1-tA)*tA*(o.y-20)+tA**2*pf.y};
+                    let rO = {x: (1-tA)**2*o.x+2*(1-tA)*tA*o.x+tA**2*pf.x, y: (1-tA)**2*o.y+2*(1-tA)*tA*(o.y-15)+tA**2*pf.y};
                     let ang = Math.atan2(pf.y-o.y, pf.x-o.x) + (j===0?-0.3:j===1?0.3:-0.5);
-                    dibujarTrazo(ctx, rO, {x: rO.x+Math.cos(ang)*50, y: rO.y+Math.sin(ang)*50}, {x: rO.x, y: rO.y-10}, 3, 0, 200, false, () => {
-                        sub++; if (sub === 3) { ramasTerminadas++; if (ramasTerminadas === ramasTotales) setTimeout(() => florecerYDesplazar(bX, window.innerHeight * 0.30), 500); }
+                    dibujarTrazo(ctx, rO, {x: rO.x+Math.cos(ang)*30, y: rO.y+Math.sin(ang)*30}, {x: rO.x, y: rO.y-5}, 2, 0, 150, false, () => {
+                        sub++; if (sub === 3) { ramasTerminadas++; if (ramasTerminadas === ramasTotales) setTimeout(() => florecerYDesplazar(bX, pT.y + 20), 500); }
                     });
                 }
             });
@@ -177,18 +187,25 @@ function dibujarTrazo(ctx, p0, p1, cp, wI, wF, delay, esTronco, cb) {
 
 function florecerYDesplazar(xC, yC) {
     let generados = 0;
+    const esMovil = window.innerWidth < 600;
+    const factorEscala = esMovil ? 0.45 : 0.85; 
     for (let i = 0; i < totalCorazonesMeta; i++) {
         setTimeout(() => {
             let r = Math.sqrt(Math.random()), t = Math.random() * Math.PI * 2;
             let x = r * 14 * Math.pow(Math.sin(t), 3), y = -r * (11 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-            corazonesCopa.push({ x: (x * 17 + xC) + (Math.random() - 0.5) * 350, y: (y * 14 + yC) + (Math.random() - 0.5) * 120, s: Math.random() * 6 + 3, col: COLOR_ROSADO, rot: Math.random() * Math.PI * 2 });
+            corazonesCopa.push({ 
+                x: (x * (18 * factorEscala) + xC) + (Math.random() - 0.5) * (200 * factorEscala), 
+                y: (y * (15 * factorEscala) + yC) + (Math.random() - 0.5) * (80 * factorEscala), 
+                s: Math.random() * 4 + 2, col: COLOR_ROSADO, rot: Math.random() * Math.PI * 2 
+            });
             generados++;
             if (generados === totalCorazonesMeta) {
                 setTimeout(() => {
-                    const anim = () => { if (desplazamientoX < window.innerWidth * 0.28) { desplazamientoX += 4; requestAnimationFrame(anim); } else escribirFrase(); }; anim();
-                }, 1200);
+                    const metaDesplazamiento = esMovil ? window.innerWidth * 0.15 : window.innerWidth * 0.28;
+                    const anim = () => { if (desplazamientoX < metaDesplazamiento) { desplazamientoX += 4; requestAnimationFrame(anim); } else escribirFrase(); }; anim();
+                }, 1000);
             }
-        }, Math.random() * 5000);
+        }, Math.random() * 4000);
     }
 }
 
@@ -200,9 +217,9 @@ function dibujarCartaDiario(ctx) {
     ctx.shadowBlur = 40; ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.fillStyle = "#F2E8D5"; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = COLOR_VINO_TINTO; ctx.lineWidth = 2; ctx.strokeRect(15, 15, w - 30, h - 30);
     if (escalaCarta > 0.9) {
-        ctx.textAlign = "center"; ctx.fillStyle = COLOR_VINO_TINTO; ctx.font = `bold 42px ${FONT_CLASICA}`; ctx.fillText(tituloCarta, w/2, 85);
-        ctx.fillStyle = "#1A1A1A"; ctx.font = `400 18px ${FONT_CLASICA}`;
-        mensajeCarta.forEach((l, i) => ctx.fillText(l, w/2, 145 + (i * 26)));
+        ctx.textAlign = "center"; ctx.fillStyle = COLOR_VINO_TINTO; ctx.font = `bold 38px ${FONT_CLASICA}`; ctx.fillText(tituloCarta, w/2, 85);
+        ctx.fillStyle = "#1A1A1A"; ctx.font = `400 17px ${FONT_CLASICA}`;
+        mensajeCarta.forEach((l, i) => ctx.fillText(l, w/2, 145 + (i * 25)));
     }
     ctx.restore();
 }
@@ -214,7 +231,7 @@ function dibujarCorazon(ctx, s, col) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.be
 function dibujarRelojSecuencial(ctx, x, y) {
     const ahora = new Date(), diff = ahora - fechaInicio;
     const d = Math.floor(diff / 86400000), h = Math.floor((diff / 3600000) % 24), m = Math.floor((diff / 60000) % 60), s = Math.floor((diff / 1000) % 60);
-    ctx.font = "bold 24px Arial"; let posX = x;
+    ctx.font = "bold 21px Arial"; let posX = x;
     const unds = [{v: `${d} Días `, k: 'dias'}, {v: `${h} Horas `, k: 'horas'}, {v: `${m} Minutos `, k: 'minutos'}, {v: `${s} Segundos`, k: 'segundos'}];
     unds.forEach(u => {
         let p = (u.k === 'dias' || (u.k === 'horas' && progresoRevelado.dias >= 1) || (u.k === 'minutos' && progresoRevelado.horas >= 1) || (u.k === 'segundos' && progresoRevelado.minutos >= 1));
@@ -232,10 +249,10 @@ function getBotonRect(ctx) {
     let mX = window.innerWidth < 600 ? 30 : 70;
     const fraseBoton = "- I love You!";
     const textoCompletoFinal = frasesExtra[frasesExtra.length - 1]; 
-    ctx.font = `bold italic 21px ${FONT_CLASICA}`;
+    ctx.font = `bold italic 20px ${FONT_CLASICA}`;
     const anchoCompleto = ctx.measureText(textoCompletoFinal).width;
     const anchoBoton = ctx.measureText(fraseBoton).width;
-    return { x: mX + (anchoCompleto - anchoBoton), y: 80 + (frasesExtra.length - 1) * 32 - 25, w: anchoBoton, h: 35 };
+    return { x: mX + (anchoCompleto - anchoBoton), y: 70 + (frasesExtra.length - 1) * 30 - 25, w: anchoBoton, h: 35 };
 }
 
 window.onload = function() {
@@ -247,11 +264,9 @@ window.onload = function() {
         if (!escribiendoLineas || indiceFraseActual < frasesExtra.length) return;
         const r = getBotonRect(ctx);
         if (e.clientX > r.x && e.clientX < r.x + r.w && e.clientY > r.y && e.clientY < r.y + r.h) {
-            mouseSobreBoton = true;
-            cvs.style.cursor = 'pointer';
+            mouseSobreBoton = true; cvs.style.cursor = 'pointer';
         } else {
-            mouseSobreBoton = false;
-            cvs.style.cursor = 'default';
+            mouseSobreBoton = false; cvs.style.cursor = 'default';
         }
     });
 
